@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button onclick="getObjects">Press</button>
+    <script>
+        const url = 'https://681cdcfaf74de1d219ae0c04.mockapi.io'
+        function loadObjects() {
+            return new promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('GET', url + '/students')
+                request.responseType = 'json'
+                request.onload = function () {
+                    if (request.status == 200) {
+                        resolve(request.response)
+                    }
+                    else {
+                        reject(error(request.responseText))
+                    }
+                }
+                request.onerror()
+                request.send()
+            })
+        }
+        function saveObjects() {
+            return new promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('POST', url + '/students')
+                request.getResponseHeader('Contest-Type','Aplication/json')
+                var data = JSON.stringify({
+                    'firstName': document.getElementById('firstName').value,
+                    'lastName': document.getElementById('lastName').value,
+                    'id': document.getElementById('id').value
+                })
+                request.onload(response => {
+                    if(request.status == 201){
+                        resolve(request.response)
+                    }
+                    else {
+                        reject(error(request.responseType))
+                    }
+                })
+                request.onerror()
+                request.send()
+            })
+        }
+        function getObjects () {
+            loadObjects.then(response => {
+                console.log(response[0].firstName)
+                alert(response[0].firstName)
+            })
+            .catch(error => {
+                console.log(error)
+            })
+        }
+    </script>
+</body>
+
+</html>
