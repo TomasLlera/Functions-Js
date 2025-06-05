@@ -3,16 +3,36 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width , initial-scale=1.0">
     <title>Document</title>
 </head>
 
 <body>
-    <button onclick="getObjects">Press</button>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td></td>
+                <td><input id='firstName' /></td>
+                <td><input id='lastName' /></td>
+                <td colspan='2' style='text-align: center'><button onclick='addStudent()'>ADD</button></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <button onclick="getObjects()">Press</button>
     <script>
         const url = 'https://681cdcfaf74de1d219ae0c04.mockapi.io'
         function loadObjects() {
-            return new promise(function (resolve, reject) {
+            return new Promise(function (resolve, reject) {
                 var request = new XMLHttpRequest()
                 request.open('GET', url + '/students')
                 request.responseType = 'json'
@@ -24,41 +44,72 @@
                         reject(error(request.responseText))
                     }
                 }
-                request.onerror()
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
                 request.send()
             })
         }
-        function saveObjects() {
-            return new promise(function (resolve, reject) {
+        function saveStudent() {
+            return new Promise(function (resolve, reject) {
                 var request = new XMLHttpRequest()
                 request.open('POST', url + '/students')
-                request.getResponseHeader('Contest-Type','Aplication/json')
-                var data = JSON.stringify({
+                request.setResponseHeader('Content-Type', 'Application/json')
+                var student = JSON.stringify({
                     'firstName': document.getElementById('firstName').value,
                     'lastName': document.getElementById('lastName').value,
-                    'id': document.getElementById('id').value
                 })
-                request.onload(response => {
-                    if(request.status == 201){
+                request.onload = (response => {
+                    if (request.status == 201) {
                         resolve(request.response)
                     }
                     else {
                         reject(error(request.responseType))
                     }
                 })
-                request.onerror()
-                request.send()
+                request.onerror = function () {
+                    reject(Error('Error: unexpected network error.'))
+                }
+                request.send(student)
             })
         }
-        function getObjects () {
-            loadObjects.then(response => {
-                console.log(response[0].firstName)
-                alert(response[0].firstName)
+        function getObjects() {
+            loadObjects().then(response => {
+                const tbody = document.querySelector('tbody')
+                tbody.innerHTML = '';
+
+                response.forEach(students => {
+                    if (students.id && students.firstName && students.lastName) {
+                        InsertTr(students);
+                    }
+
+                });
             })
-            .catch(error => {
-                console.log(error)
-            })
+                .catch(error => {
+                    console.log(error)
+                })
         }
+        function addStudent() {
+            if (document.getElementById('firstName').value.trim() !== '' &&
+                document.getElementById('lastName').value.trim() !== '')
+                
+                saveStudent().then((response) => {
+                    alert(response)
+                    var student = JSON.parse(response)
+                    InsertTr(student)
+                }).catch(reason => {
+                    console.error(reason)
+                })
+            }
+
+            function InsertTr(students) {
+                const tbody = document.querySelector('tbody')
+                const tr = document.createElement('tr')
+
+                tr.innerHTML = `<td>${students.id}</td><td>${students.firstName}</td><td>${students.lastName}</td>`;
+
+                tbody.appendChild(tr);
+            }
     </script>
 </body>
 
